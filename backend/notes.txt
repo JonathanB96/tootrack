@@ -1,0 +1,19 @@
+{
+  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY5NmZhZTQ2NzkzYzJiMjgyNjEzYzNmZCIsInJvbGUiOiJhZG1pbiIsIm5hbWUiOiJBZG1pbiBUZWNoIiwiYXJlYSI6IkFyZWEtMSIsImlhdCI6MTc2ODkyNjg4OSwiZXhwIjoxNzY5NTMxNjg5fQ.rM0aQoe9j8nMrFu8gDar7sv-ws9MybQ-r1lK0WcCyWg",
+  "user": {
+    "id": "696fae46793c2b282613c3fd",
+    "name": "Admin Tech",
+    "email": "admin@test.com",
+    "role": "admin",
+    "area": "Area-1"
+  }
+}
+Logins you can use right away
+
+Admin: admin@test.com / Password123!
+
+Leader: leader@test.com / Password123!
+
+Operator 1: op1@test.com / Password123!
+
+Operator 2: op2@test.com / Password123!
