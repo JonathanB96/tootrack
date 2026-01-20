@@ -9,6 +9,10 @@ export default function Tools() {
   const [tools, setTools] = useState([]);
   const [loading, setLoading] = useState(true);
   const [errMsg, setErrMsg] = useState("");
+  const [q, setQ] = useState("");
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [onlyMyArea, setOnlyMyArea] = useState(false);
+
 
   // Admin create tool
   const [toolTag, setToolTag] = useState("");
@@ -84,8 +88,32 @@ export default function Tools() {
   };
 
   const toolsSorted = useMemo(() => {
-    return [...tools].sort((a, b) => (a.toolTag > b.toolTag ? 1 : -1));
-  }, [tools]);
+  const query = q.trim().toLowerCase();
+
+  const filtered = tools.filter((t) => {
+    if (onlyMyArea && user?.area && t.area !== user.area) return false;
+    if (statusFilter !== "all" && t.status !== statusFilter) return false;
+
+    if (!query) return true;
+
+    const hay = [
+      t.toolTag,
+      t.name,
+      t.category,
+      t.area,
+      t.status,
+      t.currentHolder,
+    ]
+      .filter(Boolean)
+      .join(" ")
+      .toLowerCase();
+
+    return hay.includes(query);
+  });
+
+    return filtered.sort((a, b) => (a.toolTag > b.toolTag ? 1 : -1));
+    }, [tools, q, statusFilter, onlyMyArea, user?.area]);
+
 
   return (
     <div className="container py-4">
@@ -138,7 +166,53 @@ export default function Tools() {
               </div>
             </form>
           </div>
+          <div className="card mb-3 shadow-sm">
+            <div className="card-body">
+            <div className="row g-2 align-items-center">
+            <div className="col-md-6">
+            <input
+            className="form-control"
+            value={q}
+            onChange={(e) => setQ(e.target.value)}
+            placeholder="Search tools (tag, name, category, area)..."
+            />
+      </div>
+
+      <div className="col-md-3">
+        <select
+          className="form-select"
+          value={statusFilter}
+          onChange={(e) => setStatusFilter(e.target.value)}
+        >
+          <option value="all">All statuses</option>
+          <option value="available">available</option>
+          <option value="checked_out">checked_out</option>
+          <option value="missing">missing</option>
+          <option value="calibration">calibration</option>
+          <option value="damaged">damaged</option>
+        </select>
+      </div>
+
+      <div className="col-md-3 d-flex justify-content-md-end">
+        <div className="form-check">
+          <input
+            className="form-check-input"
+            type="checkbox"
+            checked={onlyMyArea}
+            onChange={(e) => setOnlyMyArea(e.target.checked)}
+            id="onlyMyArea"
+          />
+          <label className="form-check-label" htmlFor="onlyMyArea">
+            Only my area
+          </label>
         </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+        </div>
+        
       ) : null}
 
       <div className="card shadow-sm">

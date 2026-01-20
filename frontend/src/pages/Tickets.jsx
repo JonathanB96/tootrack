@@ -13,6 +13,11 @@ export default function Tickets() {
   const [issueType, setIssueType] = useState("missing");
   const [notes, setNotes] = useState("");
 
+  // Search + filters
+  const [q, setQ] = useState("");
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [issueFilter, setIssueFilter] = useState("all");
+
   const [errMsg, setErrMsg] = useState("");
   const [loading, setLoading] = useState(true);
 
@@ -62,9 +67,34 @@ export default function Tickets() {
     }
   };
 
-  const sortedTickets = useMemo(() => {
-    return [...tickets].sort((a, b) => (a.updatedAt < b.updatedAt ? 1 : -1));
-  }, [tickets]);
+  const filteredTickets = useMemo(() => {
+    const query = (q || "").trim().toLowerCase();
+
+    const filtered = tickets.filter((t) => {
+      if (statusFilter !== "all" && t.status !== statusFilter) return false;
+      if (issueFilter !== "all" && t.issueType !== issueFilter) return false;
+
+      if (!query) return true;
+
+      const hay = [
+        t.tool?.toolTag,
+        t.tool?.name,
+        t.tool?.area,
+        t.issueType,
+        t.status,
+        t.createdBy?.name,
+        t.createdBy?.email,
+        t.notes,
+      ]
+        .filter(Boolean)
+        .join(" ")
+        .toLowerCase();
+
+      return hay.includes(query);
+    });
+
+    return filtered.sort((a, b) => (a.updatedAt < b.updatedAt ? 1 : -1));
+  }, [tickets, q, statusFilter, issueFilter]);
 
   return (
     <div className="container py-4">
@@ -72,6 +102,7 @@ export default function Tickets() {
 
       {errMsg ? <div className="alert alert-danger">{errMsg}</div> : null}
 
+      {/* Create Ticket */}
       <div className="card mb-4 shadow-sm">
         <div className="card-body">
           <h5 className="card-title mb-3">Create Ticket</h5>
@@ -128,8 +159,61 @@ export default function Tickets() {
         </div>
       </div>
 
+      {/* Filters */}
+      <div className="card mb-3 shadow-sm">
+        <div className="card-body">
+          <div className="row g-2 align-items-center">
+            <div className="col-md-6">
+              <input
+                className="form-control"
+                value={q}
+                onChange={(e) => setQ(e.target.value)}
+                placeholder="Search tickets (tool tag/name, created by, notes)..."
+              />
+            </div>
+
+            <div className="col-md-3">
+              <select
+                className="form-select"
+                value={statusFilter}
+                onChange={(e) => setStatusFilter(e.target.value)}
+              >
+                <option value="all">All statuses</option>
+                <option value="open">open</option>
+                <option value="in_progress">in_progress</option>
+                <option value="resolved">resolved</option>
+              </select>
+            </div>
+
+            <div className="col-md-3">
+              <select
+                className="form-select"
+                value={issueFilter}
+                onChange={(e) => setIssueFilter(e.target.value)}
+              >
+                <option value="all">All issues</option>
+                <option value="missing">missing</option>
+                <option value="replace">replace</option>
+                <option value="calibration">calibration</option>
+                <option value="damaged">damaged</option>
+              </select>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Tickets Table */}
       <div className="card shadow-sm">
         <div className="card-body">
+          <div className="d-flex justify-content-between align-items-center mb-2">
+            <div className="text-muted small">
+              Showing <span className="fw-semibold">{filteredTickets.length}</span> ticket(s)
+            </div>
+            <button className="btn btn-outline-secondary btn-sm" onClick={fetchAll}>
+              Refresh
+            </button>
+          </div>
+
           {loading ? (
             <div className="text-muted">Loading...</div>
           ) : (
@@ -146,7 +230,7 @@ export default function Tickets() {
                   </tr>
                 </thead>
                 <tbody>
-                  {sortedTickets.map((t) => (
+                  {filteredTickets.map((t) => (
                     <tr key={t._id}>
                       <td className="fw-semibold">
                         {t.tool?.toolTag} — {t.tool?.name}
@@ -182,10 +266,10 @@ export default function Tickets() {
                     </tr>
                   ))}
 
-                  {sortedTickets.length === 0 ? (
+                  {filteredTickets.length === 0 ? (
                     <tr>
                       <td colSpan="6" className="text-center text-muted py-4">
-                        No tickets yet.
+                        No tickets match your filters.
                       </td>
                     </tr>
                   ) : null}
